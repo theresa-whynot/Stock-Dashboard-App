@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.schwab import router as schwab_router
+
 app = FastAPI(
     title="Stock Dashboard API",
     description="Starter API for a React stock dashboard.",
@@ -14,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(schwab_router)
 
 SAMPLE_STOCKS = [
     {"symbol": "AAPL", "name": "Apple Inc.", "price": 189.98, "change": 1.24},
