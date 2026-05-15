@@ -28,6 +28,20 @@ button {
   cursor: pointer;
 }
 
+input {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  color: #e5eefb;
+  background: rgba(15, 23, 42, 0.92);
+  font: inherit;
+}
+
+input::placeholder {
+  color: #64748b;
+}
+
 .app-shell {
   width: min(1100px, calc(100% - 32px));
   margin: 0 auto;
@@ -137,6 +151,22 @@ h2 {
   background: rgba(30, 41, 59, 0.72);
 }
 
+.watchlist-form {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 28px;
+}
+
+.watchlist-form label {
+  display: grid;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 .stock-row > div {
   display: grid;
   gap: 5px;
@@ -154,9 +184,16 @@ h2 {
   color: #fb7185 !important;
 }
 
+.ghost-button {
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: #cbd5e1;
+  background: transparent;
+}
+
 @media (max-width: 720px) {
   .hero,
-  .summary-grid {
+  .summary-grid,
+  .watchlist-form {
     grid-template-columns: 1fr;
   }
 
