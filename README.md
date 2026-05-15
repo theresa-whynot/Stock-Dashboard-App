@@ -83,6 +83,29 @@ To enable it:
 This starter only exposes read-only account detail routes. It does not include
 any trading or order placement endpoints.
 
+## Portfolio categories
+
+After Schwab is connected, click **Load accounts** to bring in your current
+positions. The dashboard shows each position and groups it into one of four
+portfolio categories:
+
+- Low risk index
+- Growth
+- Dividend
+- Speculative
+
+The category percentages are calculated from the current market value of the
+positions Schwab returns. If Schwab returns a total account liquidation value,
+the dashboard uses that as the total portfolio value; otherwise it falls back to
+the sum of loaded position values.
+
+The app makes starter guesses from the symbol and asset type. For example,
+broad ETFs and mutual funds are treated as low risk index positions, common
+dividend symbols are treated as dividend positions, and common growth symbols
+are treated as growth positions. You can change any category from the dropdown
+next to a position. Those category choices are saved locally in your browser
+with `localStorage`.
+
 ## Frontend setup
 
 Open a second terminal:
