@@ -28,6 +28,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 input {
   width: 100%;
   border: 1px solid rgba(148, 163, 184, 0.24);
@@ -139,6 +144,47 @@ h2 {
   gap: 18px;
 }
 
+.integration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.helper-text {
+  margin: 18px 0 0;
+  color: #a6b3c4;
+}
+
+.account-panel {
+  margin-bottom: 24px;
+}
+
+.account-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.account-card {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(30, 41, 59, 0.72);
+}
+
+.account-card div {
+  display: grid;
+  gap: 6px;
+}
+
+.account-card span {
+  color: #94a3b8;
+  font-size: 0.86rem;
+}
+
 .stock-list {
   display: grid;
   gap: 12px;
@@ -193,7 +239,8 @@ h2 {
 @media (max-width: 720px) {
   .hero,
   .summary-grid,
-  .watchlist-form {
+  .watchlist-form,
+  .account-card {
     grid-template-columns: 1fr;
   }
 
@@ -206,6 +253,10 @@ h2 {
   .stock-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .integration-actions {
+    justify-content: flex-start;
   }
 
   .price-block {

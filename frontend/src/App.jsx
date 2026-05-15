@@ -23,6 +23,40 @@ function readSavedStocks() {
   }
 }
 
+function formatCurrency(value) {
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue)) {
+    return "Not available";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(numberValue);
+}
+
+function getAccountSummary(account) {
+  const securitiesAccount = account.securitiesAccount ?? account;
+  const balances =
+    securitiesAccount.currentBalances ?? securitiesAccount.initialBalances ?? {};
+  const positions = Array.isArray(securitiesAccount.positions)
+    ? securitiesAccount.positions
+    : [];
+
+  return {
+    accountNumber:
+      securitiesAccount.accountNumber ?? securitiesAccount.accountHash ?? "Unknown",
+    accountType:
+      securitiesAccount.type ?? securitiesAccount.accountType ?? "Brokerage",
+    liquidationValue:
+      balances.liquidationValue ??
+      balances.totalAccountValue ??
+      balances.cashBalance,
+    positions,
+  };
+}
+
 export default function App() {
   const [initialSavedStocks] = useState(() => readSavedStocks());
   const [stocks, setStocks] = useState(() => initialSavedStocks ?? fallbackStocks);
@@ -33,6 +67,10 @@ export default function App() {
   );
   const [symbol, setSymbol] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [schwabStatus, setSchwabStatus] = useState(null);
+  const [schwabMessage, setSchwabMessage] = useState("Checking Schwab setup...");
+  const [schwabAccounts, setSchwabAccounts] = useState([]);
+  const [schwabLoading, setSchwabLoading] = useState(false);
 
   useEffect(() => {
     if (initialSavedStocks) {
@@ -61,6 +99,78 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(stocks));
   }, [stocks]);
+
+  useEffect(() => {
+    async function loadStatus() {
+      try {
+        const response = await fetch("/api/schwab/status");
+        const data = await response.json();
+
+        setSchwabStatus(data);
+
+        if (!data.configured) {
+          setSchwabMessage(
+            "Add Schwab API credentials to backend/.env to enable account details.",
+          );
+          return;
+        }
+
+        setSchwabMessage(
+          data.connected
+            ? "Schwab is connected. Load account details when you are ready."
+            : "Schwab is configured. Connect your account to load details.",
+        );
+      } catch {
+        setSchwabMessage("Start the Python backend to use Schwab account details.");
+      }
+    }
+
+    loadStatus();
+  }, []);
+
+  async function connectSchwab() {
+    setSchwabLoading(true);
+
+    try {
+      const response = await fetch("/api/schwab/login-url");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail ?? "Unable to start Schwab login.");
+      }
+
+      window.location.href = data.authorization_url;
+    } catch (error) {
+      setSchwabMessage(error.message);
+      setSchwabLoading(false);
+    }
+  }
+
+  async function loadSchwabAccounts() {
+    setSchwabLoading(true);
+    setSchwabMessage("Loading Schwab account details...");
+
+    try {
+      const response = await fetch("/api/schwab/accounts?positions=true");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail ?? "Unable to load Schwab account details.");
+      }
+
+      setSchwabAccounts(Array.isArray(data.accounts) ? data.accounts : []);
+      setSchwabMessage("Showing read-only Schwab account details.");
+      setSchwabStatus((currentStatus) =>
+        currentStatus
+          ? { ...currentStatus, connected: true }
+          : { configured: true, connected: true },
+      );
+    } catch (error) {
+      setSchwabMessage(error.message);
+    } finally {
+      setSchwabLoading(false);
+    }
+  }
 
   function addStock(event) {
     event.preventDefault();
@@ -130,6 +240,63 @@ export default function App() {
           <span>Losers</span>
           <strong>{stocks.filter((stock) => stock.change < 0).length}</strong>
         </article>
+      </section>
+
+      <section className="panel account-panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Schwab integration</p>
+            <h2>Read-only account details</h2>
+          </div>
+          <div className="integration-actions">
+            <button
+              disabled={!schwabStatus?.configured || schwabLoading}
+              onClick={connectSchwab}
+              type="button"
+            >
+              Connect Schwab
+            </button>
+            <button
+              className="ghost-button"
+              disabled={!schwabStatus?.connected || schwabLoading}
+              onClick={loadSchwabAccounts}
+              type="button"
+            >
+              Load accounts
+            </button>
+          </div>
+        </div>
+
+        <p className="helper-text">{schwabMessage}</p>
+
+        {schwabAccounts.length > 0 && (
+          <div className="account-list">
+            {schwabAccounts.map((account, index) => {
+              const summary = getAccountSummary(account);
+
+              return (
+                <article className="account-card" key={summary.accountNumber}>
+                  <div>
+                    <span>Account {index + 1}</span>
+                    <strong>{summary.accountType}</strong>
+                  </div>
+                  <div>
+                    <span>Account identifier</span>
+                    <strong>{summary.accountNumber}</strong>
+                  </div>
+                  <div>
+                    <span>Estimated value</span>
+                    <strong>{formatCurrency(summary.liquidationValue)}</strong>
+                  </div>
+                  <div>
+                    <span>Positions</span>
+                    <strong>{summary.positions.length}</strong>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="panel">
