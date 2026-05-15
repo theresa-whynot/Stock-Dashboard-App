@@ -16,6 +16,7 @@ A simple full-stack starter for a stock market dashboard.
 │   └── requirements.txt
 └── frontend/
     ├── src/
+    │   ├── App.jsx
     │   ├── main.jsx
     │   └── styles.css
     ├── index.html
