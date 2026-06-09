@@ -30,7 +30,7 @@ export function SchwabPanel({
             onClick={onLoadAccounts}
             type="button"
           >
-            Load accounts
+            {accounts.length > 0 ? "Refresh accounts" : "Load accounts"}
           </button>
         </div>
       </div>

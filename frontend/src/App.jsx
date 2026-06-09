@@ -32,8 +32,10 @@ export default function App() {
       />
       <WatchlistPanel
         companyName={watchlist.companyName}
+        loading={watchlist.loading}
         onAddStock={watchlist.addStock}
         onCompanyNameChange={watchlist.setCompanyName}
+        onRefreshQuotes={watchlist.refreshStocks}
         onRemoveStock={watchlist.removeStock}
         onSymbolChange={watchlist.setSymbol}
         stocks={watchlist.stocks}
