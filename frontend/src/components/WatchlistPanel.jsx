@@ -1,7 +1,9 @@
 export function WatchlistPanel({
   companyName,
+  loading,
   onAddStock,
   onCompanyNameChange,
+  onRefreshQuotes,
   onRemoveStock,
   onSymbolChange,
   stocks,
@@ -14,6 +16,14 @@ export function WatchlistPanel({
           <p className="eyebrow">Watchlist</p>
           <h2>Featured stocks</h2>
         </div>
+        <button
+          className="ghost-button"
+          disabled={loading || stocks.length === 0}
+          onClick={onRefreshQuotes}
+          type="button"
+        >
+          {loading ? "Refreshing..." : "Refresh quotes"}
+        </button>
       </div>
 
       <form className="watchlist-form" onSubmit={onAddStock}>
