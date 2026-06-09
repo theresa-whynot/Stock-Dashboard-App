@@ -45,12 +45,9 @@ export function WatchlistPanel({
               <span>{stock.name}</span>
             </div>
             <div className="price-block">
-              <strong>
-                {stock.price > 0 ? `$${stock.price.toFixed(2)}` : "Watching"}
-              </strong>
-              <span className={stock.change >= 0 ? "positive" : "negative"}>
-                {stock.change >= 0 ? "+" : ""}
-                {stock.change.toFixed(2)}%
+              <strong>{formatStockPrice(stock.price)}</strong>
+              <span className={getChangeClassName(stock.change)}>
+                {formatStockChange(stock.change)}
               </span>
             </div>
             <button
@@ -65,4 +62,34 @@ export function WatchlistPanel({
       </div>
     </section>
   );
+}
+
+function formatStockPrice(price) {
+  const numberPrice = Number(price);
+
+  if (!Number.isFinite(numberPrice) || numberPrice <= 0) {
+    return "Unavailable";
+  }
+
+  return `$${numberPrice.toFixed(2)}`;
+}
+
+function formatStockChange(change) {
+  const numberChange = Number(change);
+
+  if (!Number.isFinite(numberChange)) {
+    return "No quote";
+  }
+
+  return `${numberChange >= 0 ? "+" : ""}${numberChange.toFixed(2)}%`;
+}
+
+function getChangeClassName(change) {
+  const numberChange = Number(change);
+
+  if (!Number.isFinite(numberChange)) {
+    return "";
+  }
+
+  return numberChange >= 0 ? "positive" : "negative";
 }

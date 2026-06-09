@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getStocks } from "../api/stocksApi";
 import { fallbackStocks } from "../data/fallbackStocks";
@@ -14,28 +14,61 @@ export function useWatchlist() {
   const [status, setStatus] = useState(
     initialSavedStocks
       ? "Showing your locally saved watchlist"
-      : "Loading sample market data...",
+      : "Loading live market data...",
   );
   const [symbol, setSymbol] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const stockSymbols = useMemo(
+    () => stocks.map((stock) => stock.symbol).filter(Boolean).join(","),
+    [stocks],
+  );
 
   useEffect(() => {
-    if (initialSavedStocks) {
+    const requestedSymbols = stockSymbols.split(",").filter(Boolean);
+
+    if (requestedSymbols.length === 0) {
       return;
     }
 
+    let ignoreResponse = false;
+
     async function loadStocks() {
+      setStatus("Loading live market data...");
+
       try {
-        const loadedStocks = await getStocks();
-        setStocks(loadedStocks);
-        setStatus("Live from the Python API");
-      } catch {
-        setStatus("Showing local sample data until the backend is running");
+        const loadedStocks = await getStocks(requestedSymbols);
+
+        if (ignoreResponse) {
+          return;
+        }
+
+        setStocks((currentStocks) =>
+          loadedStocks.map((stock) => {
+            const savedStock = currentStocks.find(
+              (currentStock) => currentStock.symbol === stock.symbol,
+            );
+
+            return {
+              ...savedStock,
+              ...stock,
+              name: stock.name || savedStock?.name || stock.symbol,
+            };
+          }),
+        );
+        setStatus("Live market data from Schwab");
+      } catch (error) {
+        if (!ignoreResponse) {
+          setStatus(`${error.message} Showing local data.`);
+        }
       }
     }
 
     loadStocks();
-  }, [initialSavedStocks]);
+
+    return () => {
+      ignoreResponse = true;
+    };
+  }, [stockSymbols]);
 
   useEffect(() => {
     writeStorageValue(storageKeys.watchlist, stocks);
@@ -63,11 +96,12 @@ export function useWatchlist() {
       {
         symbol: trimmedSymbol,
         name: trimmedCompanyName || `${trimmedSymbol} watchlist stock`,
-        price: 0,
-        change: 0,
+        price: null,
+        change: null,
+        available: false,
       },
     ]);
-    setStatus("Showing your locally saved watchlist");
+    setStatus("Loading live market data...");
     setSymbol("");
     setCompanyName("");
   }

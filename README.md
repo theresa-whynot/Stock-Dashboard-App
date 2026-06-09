@@ -4,7 +4,7 @@ A simple full-stack starter for a stock market dashboard.
 
 - **Frontend:** React + Vite
 - **Backend:** Python + FastAPI
-- **API:** sample stock watchlist data under `/api/stocks`
+- **API:** live Schwab market data under `/api/stocks`
 - **Local storage:** added symbols are saved in your browser
 
 ## Project structure
@@ -15,6 +15,7 @@ A simple full-stack starter for a stock market dashboard.
 │   ├── .env.example
 │   ├── app/
 │   │   ├── main.py
+│   │   ├── market_data.py
 │   │   └── schwab.py
 │   └── requirements.txt
 └── frontend/
@@ -41,10 +42,25 @@ The API runs at `http://127.0.0.1:8000`.
 Useful endpoints:
 
 - `GET /api/health`
-- `GET /api/stocks`
+- `GET /api/stocks?symbols=AAPL,MSFT,NVDA`
 - `GET /api/schwab/status`
 - `GET /api/schwab/login-url`
 - `GET /api/schwab/accounts`
+
+## Live market data
+
+The stock watchlist endpoint pulls live quote data from the Schwab Market Data
+API:
+
+```http
+GET /api/stocks?symbols=AAPL,MSFT,NVDA
+```
+
+If you omit `symbols`, the backend uses `DEFAULT_STOCK_SYMBOLS` from
+`backend/.env`, or `AAPL,MSFT,NVDA,TSLA` when that variable is not set.
+
+Live quotes require the Schwab OAuth setup below. Until Schwab is connected, the
+frontend keeps showing local watchlist symbols without live prices.
 
 ## Schwab account details
 
@@ -75,13 +91,14 @@ To enable it:
    SCHWAB_CLIENT_SECRET=your-schwab-app-secret
    SCHWAB_REDIRECT_URI=http://127.0.0.1:8000/api/schwab/callback
    FRONTEND_URL=http://localhost:5173
+   DEFAULT_STOCK_SYMBOLS=AAPL,MSFT,NVDA,TSLA
    ```
 
 5. Start the backend and frontend, then use the **Connect Schwab** button in the
    dashboard.
 
-This starter only exposes read-only account detail routes. It does not include
-any trading or order placement endpoints.
+This starter only exposes read-only account detail and market data routes. It
+does not include any trading or order placement endpoints.
 
 ## Portfolio categories
 
@@ -122,9 +139,14 @@ Use the form on the dashboard to add the stock symbols you want to watch. The
 watchlist is saved locally in your browser with `localStorage`, so it does not
 need accounts, a database, or cloud hosting.
 
+## Backend tests
+
+```bash
+cd backend
+pytest
+```
+
 ## Next ideas
 
-- Replace sample stock data with a real market data provider.
 - Add charts for historical prices.
 - Sync the local watchlist with the backend if you want multi-device access.
-- Add backend tests for API routes.
