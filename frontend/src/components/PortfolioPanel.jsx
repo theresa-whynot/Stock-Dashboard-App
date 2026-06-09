@@ -64,10 +64,14 @@ export function PortfolioPanel({
               className="positions-row"
               key={`${position.accountNumber}-${position.symbol}`}
             >
-              <strong>{position.symbol}</strong>
-              <span>{position.name}</span>
-              <span>{Number(position.quantity).toLocaleString()}</span>
-              <span>{formatCurrency(position.marketValue)}</span>
+              <strong data-label="Symbol">{position.symbol}</strong>
+              <span data-label="Name">{position.name}</span>
+              <span data-label="Quantity">
+                {Number(position.quantity).toLocaleString()}
+              </span>
+              <span data-label="Market value">
+                {formatCurrency(position.marketValue)}
+              </span>
               <label className="category-select">
                 <span>Category</span>
                 <select

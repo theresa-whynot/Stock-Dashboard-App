@@ -1,6 +1,9 @@
 export function SummaryCards({ stocks }) {
-  const gainers = stocks.filter((stock) => stock.change >= 0).length;
-  const losers = stocks.filter((stock) => stock.change < 0).length;
+  const stocksWithChange = stocks.filter((stock) =>
+    Number.isFinite(Number(stock.change)),
+  );
+  const gainers = stocksWithChange.filter((stock) => stock.change >= 0).length;
+  const losers = stocksWithChange.filter((stock) => stock.change < 0).length;
 
   return (
     <section className="summary-grid" aria-label="Market summary">
