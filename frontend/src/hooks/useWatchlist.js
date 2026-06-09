@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getStocks } from "../api/stocksApi";
 import { fallbackStocks } from "../data/fallbackStocks";
@@ -18,10 +18,48 @@ export function useWatchlist() {
   );
   const [symbol, setSymbol] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [loading, setLoading] = useState(false);
   const stockSymbols = useMemo(
     () => stocks.map((stock) => stock.symbol).filter(Boolean).join(","),
     [stocks],
   );
+  const mergeLoadedStocks = useCallback((loadedStocks) => {
+    setStocks((currentStocks) =>
+      loadedStocks.map((stock) => {
+        const savedStock = currentStocks.find(
+          (currentStock) => currentStock.symbol === stock.symbol,
+        );
+
+        return {
+          ...savedStock,
+          ...stock,
+          name: stock.name || savedStock?.name || stock.symbol,
+        };
+      }),
+    );
+  }, []);
+
+  const refreshStocks = useCallback(async () => {
+    const requestedSymbols = stockSymbols.split(",").filter(Boolean);
+
+    if (requestedSymbols.length === 0) {
+      setStatus("Add a symbol to refresh live quotes.");
+      return;
+    }
+
+    setLoading(true);
+    setStatus("Refreshing live market data...");
+
+    try {
+      const loadedStocks = await getStocks(requestedSymbols);
+      mergeLoadedStocks(loadedStocks);
+      setStatus("Live market data from Schwab");
+    } catch (error) {
+      setStatus(`${error.message} Showing local data.`);
+    } finally {
+      setLoading(false);
+    }
+  }, [mergeLoadedStocks, stockSymbols]);
 
   useEffect(() => {
     const requestedSymbols = stockSymbols.split(",").filter(Boolean);
@@ -33,6 +71,7 @@ export function useWatchlist() {
     let ignoreResponse = false;
 
     async function loadStocks() {
+      setLoading(true);
       setStatus("Loading live market data...");
 
       try {
@@ -42,23 +81,15 @@ export function useWatchlist() {
           return;
         }
 
-        setStocks((currentStocks) =>
-          loadedStocks.map((stock) => {
-            const savedStock = currentStocks.find(
-              (currentStock) => currentStock.symbol === stock.symbol,
-            );
-
-            return {
-              ...savedStock,
-              ...stock,
-              name: stock.name || savedStock?.name || stock.symbol,
-            };
-          }),
-        );
+        mergeLoadedStocks(loadedStocks);
         setStatus("Live market data from Schwab");
       } catch (error) {
         if (!ignoreResponse) {
           setStatus(`${error.message} Showing local data.`);
+        }
+      } finally {
+        if (!ignoreResponse) {
+          setLoading(false);
         }
       }
     }
@@ -68,7 +99,7 @@ export function useWatchlist() {
     return () => {
       ignoreResponse = true;
     };
-  }, [stockSymbols]);
+  }, [mergeLoadedStocks, stockSymbols]);
 
   useEffect(() => {
     writeStorageValue(storageKeys.watchlist, stocks);
@@ -116,11 +147,13 @@ export function useWatchlist() {
   return {
     stocks,
     status,
+    loading,
     symbol,
     setSymbol,
     companyName,
     setCompanyName,
     addStock,
     removeStock,
+    refreshStocks,
   };
 }
