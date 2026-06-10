@@ -6,8 +6,10 @@ The app can:
 
 - Keep a browser-saved stock watchlist.
 - Pull live quote data from the Schwab Market Data API.
+- Refresh watchlist quotes without reloading the browser page.
 - Connect to Schwab with OAuth.
 - Load read-only Schwab account and position details.
+- Refresh Schwab account and portfolio data after accounts are loaded.
 - Group Schwab positions into portfolio categories.
 - Show each category's share of the portfolio.
 - Let you manually override position categories.
@@ -170,10 +172,13 @@ Quote data loads when:
 - the saved watchlist is loaded from `localStorage`
 - you add a symbol
 - you remove a symbol
+- you click **Refresh quotes**
 - the browser page is refreshed
 
-The current main branch does not stream quotes or poll automatically in the
-background.
+The **Refresh quotes** button updates only the watchlist quote data for the
+current symbols. It does not reload the whole browser page.
+
+The app does not stream quotes or poll automatically in the background.
 
 ## Schwab account and portfolio data
 
@@ -187,8 +192,11 @@ The app will:
 - calculate total portfolio value from Schwab liquidation values when available
 - fall back to summed position values if account totals are unavailable
 
-The account and portfolio data loads when you click **Load accounts**. The
-current main branch does not poll account data automatically in the background.
+After accounts have loaded, the button changes to **Refresh accounts**. Clicking
+it reloads Schwab account details and portfolio positions without reloading the
+whole browser page.
+
+The app does not poll account data automatically in the background.
 
 ## Portfolio categories
 
@@ -224,6 +232,7 @@ You can:
 - remove symbols
 - keep the watchlist locally without a backend database
 - load live quotes for the current watchlist after Schwab is connected
+- refresh live quotes with the **Refresh quotes** button
 
 ## Frontend theme
 
@@ -256,7 +265,6 @@ npm run build
 
 ## Next ideas
 
-- Add manual refresh buttons for quotes and account data.
 - Add automatic polling with visible "last updated" timestamps.
 - Add charts for historical prices.
 - Sync the watchlist with a backend database for multi-device access.
