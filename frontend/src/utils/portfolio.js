@@ -89,7 +89,11 @@ export function getDefaultCategory(position) {
   return "speculative";
 }
 
-export function getPortfolioPositions(accounts, categoryBySymbol) {
+function getCryptoCategory(symbol) {
+  return symbol === "BTC" || symbol === "ETH" ? "growth" : "speculative";
+}
+
+function getSchwabPositions(accounts, categoryBySymbol) {
   return accounts.flatMap((account, accountIndex) => {
     const summary = getAccountSummary(account);
 
@@ -99,6 +103,7 @@ export function getPortfolioPositions(accounts, categoryBySymbol) {
       return {
         accountNumber: summary.accountNumber,
         accountIndex,
+        source: "Schwab",
         symbol,
         name: getPositionName(position),
         quantity: getPositionQuantity(position),
@@ -107,6 +112,26 @@ export function getPortfolioPositions(accounts, categoryBySymbol) {
       };
     });
   });
+}
+
+function getCoinbasePositions(coinbasePositions) {
+  return coinbasePositions.map((position) => ({
+    ...position,
+    source: "Coinbase",
+    category: getCryptoCategory(position.symbol),
+    lockedCategory: true,
+  }));
+}
+
+export function getPortfolioPositions(
+  accounts,
+  categoryBySymbol,
+  coinbasePositions = [],
+) {
+  return [
+    ...getSchwabPositions(accounts, categoryBySymbol),
+    ...getCoinbasePositions(coinbasePositions),
+  ];
 }
 
 export function getTotalPortfolioValue(accounts, positions) {
@@ -119,8 +144,12 @@ export function getTotalPortfolioValue(accounts, positions) {
       : total;
   }, 0);
 
+  const coinbaseTotal = positions
+    .filter((position) => position.source === "Coinbase")
+    .reduce((total, position) => total + position.marketValue, 0);
+
   if (accountTotal > 0) {
-    return accountTotal;
+    return accountTotal + coinbaseTotal;
   }
 
   return positions.reduce((total, position) => total + position.marketValue, 0);

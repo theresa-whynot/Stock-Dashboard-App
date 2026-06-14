@@ -21,9 +21,9 @@ export function PortfolioPanel({
       </div>
 
       <p className="helper-text">
-        Positions load from Schwab after you connect your account. Starter
-        categories are guessed from symbol and asset type, and any changes you
-        make here are saved locally in this browser.
+        Positions load from Schwab and Coinbase after you connect each brokerage.
+        Stock categories are guessed from symbol and asset type, while BTC and
+        ETH are fixed as growth and other crypto is fixed as speculative.
       </p>
 
       <div className="allocation-grid">
@@ -47,13 +47,14 @@ export function PortfolioPanel({
 
       <div className="positions-header">
         <h3>Current positions</h3>
-        <span>{positions.length} loaded from Schwab</span>
+        <span>{positions.length} loaded from brokerages</span>
       </div>
 
       {positions.length > 0 ? (
         <div className="positions-table">
           <div className="positions-row positions-heading">
             <span>Symbol</span>
+              <span>Source</span>
             <span>Name</span>
             <span>Quantity</span>
             <span>Market value</span>
@@ -65,6 +66,7 @@ export function PortfolioPanel({
               key={`${position.accountNumber}-${position.symbol}`}
             >
               <strong data-label="Symbol">{position.symbol}</strong>
+              <span data-label="Source">{position.source}</span>
               <span data-label="Name">{position.name}</span>
               <span data-label="Quantity">
                 {Number(position.quantity).toLocaleString()}
@@ -78,6 +80,7 @@ export function PortfolioPanel({
                   onChange={(event) =>
                     onUpdatePositionCategory(position.symbol, event.target.value)
                   }
+                  disabled={position.lockedCategory}
                   value={position.category}
                 >
                   {Object.entries(portfolioCategories).map(
@@ -94,7 +97,8 @@ export function PortfolioPanel({
         </div>
       ) : (
         <div className="empty-state">
-          Connect Schwab and load accounts to see your current positions here.
+          Connect Schwab or Coinbase and load accounts to see your current
+          positions here.
         </div>
       )}
     </section>
