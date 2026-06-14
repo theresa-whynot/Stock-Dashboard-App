@@ -3,13 +3,13 @@ export const portfolioCategories = {
     label: "Low risk index",
     description: "Broad index ETFs, mutual funds, and diversified funds.",
   },
-  growth: {
-    label: "Growth",
-    description: "Companies where the main goal is share price growth.",
-  },
   dividend: {
     label: "Dividend",
     description: "Income-oriented stocks and dividend-focused funds.",
+  },
+  growth: {
+    label: "Growth",
+    description: "Companies where the main goal is share price growth.",
   },
   speculative: {
     label: "Speculative",

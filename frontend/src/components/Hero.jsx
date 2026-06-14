@@ -3,10 +3,10 @@ export function Hero({ status }) {
     <section className="hero">
       <div>
         <p className="eyebrow">Stock Dashboard Starter</p>
-        <h1>Track your market watchlist</h1>
+        <h1>Track your portfolio risk</h1>
         <p className="hero-copy">
-          A lightweight React and Python boilerplate for building dashboards,
-          alerts, charts, and portfolio tools.
+          A lightweight React and Python boilerplate to track risk on your
+          positions from multiple brokerages.
         </p>
       </div>
       <div className="status-card">
