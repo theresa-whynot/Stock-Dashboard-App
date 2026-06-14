@@ -407,6 +407,34 @@ h3 {
   line-height: 1.6;
 }
 
+.broker-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.broker-status-card {
+  padding: 16px;
+  border: 1px solid rgba(168, 85, 247, 0.16);
+  border-radius: 18px;
+  background: var(--color-card);
+}
+
+.broker-status-card span {
+  color: var(--color-green);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.broker-status-card p {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
 .account-panel,
 .portfolio-panel {
   margin-bottom: 24px;
@@ -543,7 +571,7 @@ h3 {
 
 .positions-row {
   display: grid;
-  grid-template-columns: minmax(80px, 0.7fr) minmax(180px, 1.6fr) minmax(90px, 0.7fr) minmax(120px, 0.9fr) minmax(180px, 1fr);
+  grid-template-columns: minmax(80px, 0.7fr) minmax(90px, 0.7fr) minmax(180px, 1.4fr) minmax(90px, 0.7fr) minmax(120px, 0.9fr) minmax(180px, 1fr);
   gap: 14px;
   align-items: center;
   padding: 14px 16px;
@@ -668,7 +696,7 @@ h3 {
   }
 
   .positions-row {
-    grid-template-columns: minmax(70px, 0.7fr) minmax(160px, 1.5fr) minmax(88px, 0.7fr) minmax(120px, 0.9fr);
+    grid-template-columns: minmax(70px, 0.7fr) minmax(80px, 0.7fr) minmax(160px, 1.3fr) minmax(88px, 0.7fr) minmax(120px, 0.9fr);
   }
 
   .positions-row > .category-select {
@@ -690,6 +718,7 @@ h3 {
 
   .hero,
   .watchlist-form,
+  .broker-status-grid,
   .account-card,
   .allocation-grid {
     grid-template-columns: 1fr;

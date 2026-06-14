@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getStocks } from "../api/stocksApi";
+import { getMarketQuotes, isCryptoSymbol } from "../api/marketQuotesApi";
 import { fallbackStocks } from "../data/fallbackStocks";
 import {
   readSavedStocks,
@@ -51,9 +51,13 @@ export function useWatchlist() {
     setStatus("Refreshing live market data...");
 
     try {
-      const loadedStocks = await getStocks(requestedSymbols);
-      mergeLoadedStocks(loadedStocks);
-      setStatus("Live market data from Schwab");
+      const { errors, quotes } = await getMarketQuotes(requestedSymbols);
+      mergeLoadedStocks(quotes);
+      setStatus(
+        errors.length > 0
+          ? `${errors[0]} Showing available market data.`
+          : "Live market data from Schwab and Coinbase",
+      );
     } catch (error) {
       setStatus(`${error.message} Showing local data.`);
     } finally {
@@ -75,14 +79,18 @@ export function useWatchlist() {
       setStatus("Loading live market data...");
 
       try {
-        const loadedStocks = await getStocks(requestedSymbols);
+        const { errors, quotes } = await getMarketQuotes(requestedSymbols);
 
         if (ignoreResponse) {
           return;
         }
 
-        mergeLoadedStocks(loadedStocks);
-        setStatus("Live market data from Schwab");
+        mergeLoadedStocks(quotes);
+        setStatus(
+          errors.length > 0
+            ? `${errors[0]} Showing available market data.`
+            : "Live market data from Schwab and Coinbase",
+        );
       } catch (error) {
         if (!ignoreResponse) {
           setStatus(`${error.message} Showing local data.`);
@@ -126,10 +134,13 @@ export function useWatchlist() {
       ...currentStocks,
       {
         symbol: trimmedSymbol,
-        name: trimmedCompanyName || `${trimmedSymbol} watchlist stock`,
+        name:
+          trimmedCompanyName ||
+          `${trimmedSymbol} ${isCryptoSymbol(trimmedSymbol) ? "crypto" : "stock"}`,
         price: null,
         change: null,
         available: false,
+        assetType: isCryptoSymbol(trimmedSymbol) ? "crypto" : "stock",
       },
     ]);
     setStatus("Loading live market data...");

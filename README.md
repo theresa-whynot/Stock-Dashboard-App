@@ -12,8 +12,9 @@ The app can:
 - Load read-only Schwab account and position details.
 - Load read-only Coinbase account details.
 - Refresh Schwab account and portfolio data after accounts are loaded.
-- Group Schwab positions into portfolio categories.
-- Show each category's share of the portfolio.
+- Group Schwab and Coinbase positions into portfolio categories.
+- Combine Schwab and Coinbase values in portfolio category totals.
+- Show each category's share of the combined portfolio.
 - Let you manually override position categories.
 - Present the dashboard with a black, green, and purple mobile-friendly theme.
 
@@ -184,17 +185,17 @@ Quote data loads when:
 - the saved watchlist is loaded from `localStorage`
 - you add a symbol
 - you remove a symbol
-- you click **Refresh quotes**
+- you click **Refresh market data**
 - the browser page is refreshed
 
-The **Refresh quotes** button updates only the watchlist quote data for the
-current symbols. It does not reload the whole browser page.
+The **Refresh market data** button updates only the watchlist quote data for the
+current stock and crypto symbols. It does not reload the whole browser page.
 
 The app does not stream quotes or poll automatically in the background.
 
 ## Schwab account and portfolio data
 
-After Schwab is connected, click **Load accounts** in the dashboard.
+After Schwab is connected, click **Load all accounts** in the dashboard.
 
 The app will:
 
@@ -204,9 +205,8 @@ The app will:
 - calculate total portfolio value from Schwab liquidation values when available
 - fall back to summed position values if account totals are unavailable
 
-After accounts have loaded, the button changes to **Refresh accounts**. Clicking
-it reloads Schwab account details and portfolio positions without reloading the
-whole browser page.
+After accounts have loaded, clicking **Load all accounts** again reloads Schwab
+and Coinbase account details without reloading the whole browser page.
 
 The app does not poll account data automatically in the background.
 
@@ -239,22 +239,33 @@ GET /api/crypto?symbols=BTC,ETH,SOL
 Coinbase public crypto market data and returns normalized quote objects for the
 frontend watchlist.
 
+The dashboard has a separate **Connect Coinbase** button in the read-only
+account details panel. Coinbase does not use the same OAuth login screen as
+Schwab in this starter; the button loads accounts with the API key values stored
+in `backend/.env`.
+
 ## Portfolio categories
 
-Loaded Schwab positions are grouped into four categories:
+Loaded Schwab and Coinbase positions are grouped into four categories:
 
 - Low risk index
 - Dividend
 - Growth
 - Speculative
 
-The app makes starter category guesses from each position's symbol and asset
-type. For example, broad ETFs and mutual funds are treated as low risk index
-positions, common dividend symbols are treated as dividend positions, and common
-growth symbols are treated as growth positions.
+The app makes starter category guesses from each Schwab position's symbol and
+asset type. For example, broad ETFs and mutual funds are treated as low risk
+index positions, common dividend symbols are treated as dividend positions, and
+common growth symbols are treated as growth positions.
+
+Coinbase crypto categories are intentionally hardcoded:
+
+- Bitcoin (`BTC`) and Ethereum (`ETH`) are Growth
+- all other crypto positions are Speculative
 
 You can change any position category from the dropdown next to the position.
-Those category choices are saved in browser `localStorage`.
+Those category choices are saved in browser `localStorage` for Schwab positions.
+Coinbase crypto categories are locked by the rules above.
 
 Category percentages are calculated as:
 
@@ -269,11 +280,13 @@ The watchlist is saved in browser `localStorage`.
 You can:
 
 - add a stock symbol
+- add a crypto symbol such as `BTC` or `ETH`
 - optionally provide a company name
 - remove symbols
 - keep the watchlist locally without a backend database
-- load live quotes for the current watchlist after Schwab is connected
-- refresh live quotes with the **Refresh quotes** button
+- load live stock quotes after Schwab is connected
+- load live crypto quotes from Coinbase public market data
+- refresh stock and crypto quotes with the **Refresh market data** button
 
 ## Frontend theme
 

@@ -14,7 +14,7 @@ export function WatchlistPanel({
       <div className="panel-header">
         <div>
           <p className="eyebrow">Watchlist</p>
-          <h2>Featured stocks</h2>
+          <h2>Featured stocks and crypto</h2>
         </div>
         <button
           className="ghost-button"
@@ -22,7 +22,7 @@ export function WatchlistPanel({
           onClick={onRefreshQuotes}
           type="button"
         >
-          {loading ? "Refreshing..." : "Refresh quotes"}
+          {loading ? "Refreshing..." : "Refresh market data"}
         </button>
       </div>
 
@@ -32,15 +32,15 @@ export function WatchlistPanel({
           <input
             maxLength="8"
             onChange={(event) => onSymbolChange(event.target.value)}
-            placeholder="AAPL"
+            placeholder="AAPL or BTC"
             value={symbol}
           />
         </label>
         <label>
-          Company name
+          Name
           <input
             onChange={(event) => onCompanyNameChange(event.target.value)}
-            placeholder="Apple Inc."
+            placeholder="Apple Inc. or Bitcoin"
             value={companyName}
           />
         </label>
