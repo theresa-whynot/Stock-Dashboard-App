@@ -6,9 +6,11 @@ The app can:
 
 - Keep a browser-saved stock watchlist.
 - Pull live quote data from the Schwab Market Data API.
+- Pull crypto quote data from Coinbase.
 - Refresh watchlist quotes without reloading the browser page.
 - Connect to Schwab with OAuth.
 - Load read-only Schwab account and position details.
+- Load read-only Coinbase account details.
 - Refresh Schwab account and portfolio data after accounts are loaded.
 - Group Schwab positions into portfolio categories.
 - Show each category's share of the portfolio.
@@ -26,6 +28,8 @@ production deployment configuration.
 │   ├── .env.example
 │   ├── app/
 │   │   ├── main.py
+│   │   ├── coinbase.py
+│   │   ├── crypto_market_data.py
 │   │   ├── market_data.py
 │   │   └── schwab.py
 │   ├── requirements.txt
@@ -93,9 +97,12 @@ Useful endpoints:
 
 - `GET /api/health`
 - `GET /api/stocks?symbols=AAPL,MSFT,NVDA`
+- `GET /api/crypto?symbols=BTC,ETH,SOL`
 - `GET /api/schwab/status`
 - `GET /api/schwab/login-url`
 - `GET /api/schwab/accounts`
+- `GET /api/coinbase/status`
+- `GET /api/coinbase/accounts`
 
 ## Schwab setup
 
@@ -129,6 +136,11 @@ SCHWAB_CLIENT_SECRET=your-schwab-app-secret
 SCHWAB_REDIRECT_URI=http://127.0.0.1:8000/api/schwab/callback
 FRONTEND_URL=http://localhost:5173
 DEFAULT_STOCK_SYMBOLS=AAPL,MSFT,NVDA,TSLA
+DEFAULT_CRYPTO_SYMBOLS=BTC,ETH,SOL
+
+COINBASE_API_KEY_NAME=organizations/your-org-id/apiKeys/your-key-id
+COINBASE_API_PRIVATE_KEY=-----BEGIN EC PRIVATE KEY-----\nyour-private-key\n-----END EC PRIVATE KEY-----\n
+COINBASE_JWT_ALGORITHM=ES256
 ```
 
 The `DEFAULT_STOCK_SYMBOLS` value is used by `GET /api/stocks` when no
@@ -197,6 +209,35 @@ it reloads Schwab account details and portfolio positions without reloading the
 whole browser page.
 
 The app does not poll account data automatically in the background.
+
+## Coinbase account and crypto data
+
+The Coinbase integration uses Coinbase Advanced Trade API credentials stored in
+`backend/.env`. The React frontend never receives your Coinbase private key.
+
+Set:
+
+```env
+COINBASE_API_KEY_NAME=organizations/your-org-id/apiKeys/your-key-id
+COINBASE_API_PRIVATE_KEY=-----BEGIN EC PRIVATE KEY-----\nyour-private-key\n-----END EC PRIVATE KEY-----\n
+COINBASE_JWT_ALGORITHM=ES256
+```
+
+`COINBASE_API_PRIVATE_KEY` can stay on one line with escaped `\n` newlines. If
+Coinbase gives you a different signing algorithm, update `COINBASE_JWT_ALGORITHM`
+to match the key type.
+
+Useful Coinbase endpoints:
+
+```http
+GET /api/coinbase/status
+GET /api/coinbase/accounts
+GET /api/crypto?symbols=BTC,ETH,SOL
+```
+
+`/api/coinbase/accounts` is authenticated and read-only. `/api/crypto` uses
+Coinbase public crypto market data and returns normalized quote objects for the
+frontend watchlist.
 
 ## Portfolio categories
 

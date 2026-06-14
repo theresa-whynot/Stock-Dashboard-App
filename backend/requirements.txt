@@ -1,5 +1,6 @@
 fastapi
 httpx
+PyJWT[crypto]
 pytest
 python-dotenv
 uvicorn[standard]
