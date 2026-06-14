@@ -90,8 +90,8 @@ positions. The dashboard shows each position and groups it into one of four
 portfolio categories:
 
 - Low risk index
-- Growth
 - Dividend
+- Growth
 - Speculative
 
 The category percentages are calculated from the current market value of the

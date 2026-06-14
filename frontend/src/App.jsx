@@ -8,13 +8,13 @@ const portfolioCategories = {
     label: "Low risk index",
     description: "Broad index ETFs, mutual funds, and diversified funds.",
   },
-  growth: {
-    label: "Growth",
-    description: "Companies where the main goal is share price growth.",
-  },
   dividend: {
     label: "Dividend",
     description: "Income-oriented stocks and dividend-focused funds.",
+  },
+  growth: {
+    label: "Growth",
+    description: "Companies where the main goal is share price growth.",
   },
   speculative: {
     label: "Speculative",
@@ -465,31 +465,16 @@ export default function App() {
       <section className="hero">
         <div>
           <p className="eyebrow">Stock Dashboard Starter</p>
-          <h1>Track your market watchlist</h1>
+          <h1>Track your portfolio risk</h1>
           <p className="hero-copy">
-            A lightweight React and Python boilerplate for building dashboards,
-            alerts, charts, and portfolio tools.
+            A lightweight React and Python boilerplate to track risk on your
+            positions from multiple brokerages.
           </p>
         </div>
         <div className="status-card">
           <span>API Status</span>
           <strong>{status}</strong>
         </div>
-      </section>
-
-      <section className="summary-grid" aria-label="Market summary">
-        <article>
-          <span>Watchlist</span>
-          <strong>{stocks.length}</strong>
-        </article>
-        <article>
-          <span>Gainers</span>
-          <strong>{stocks.filter((stock) => stock.change >= 0).length}</strong>
-        </article>
-        <article>
-          <span>Losers</span>
-          <strong>{stocks.filter((stock) => stock.change < 0).length}</strong>
-        </article>
       </section>
 
       <section className="panel account-panel">
