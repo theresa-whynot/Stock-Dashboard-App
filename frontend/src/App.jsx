@@ -1,7 +1,8 @@
+import { BrokeragePanel } from "./components/BrokeragePanel";
 import { Hero } from "./components/Hero";
 import { PortfolioPanel } from "./components/PortfolioPanel";
-import { SchwabPanel } from "./components/SchwabPanel";
 import { WatchlistPanel } from "./components/WatchlistPanel";
+import { useCoinbaseAccounts } from "./hooks/useCoinbaseAccounts";
 import { usePortfolioCategories } from "./hooks/usePortfolioCategories";
 import { useSchwabAccounts } from "./hooks/useSchwabAccounts";
 import { useWatchlist } from "./hooks/useWatchlist";
@@ -9,18 +10,30 @@ import { useWatchlist } from "./hooks/useWatchlist";
 export default function App() {
   const watchlist = useWatchlist();
   const schwab = useSchwabAccounts();
-  const portfolio = usePortfolioCategories(schwab.schwabAccounts);
+  const coinbase = useCoinbaseAccounts();
+  const portfolio = usePortfolioCategories(
+    schwab.schwabAccounts,
+    coinbase.coinbasePositions,
+  );
+
+  async function loadAllAccounts() {
+    await Promise.allSettled([
+      schwab.schwabStatus?.connected
+        ? schwab.loadSchwabAccounts()
+        : Promise.resolve(),
+      coinbase.coinbaseStatus?.configured
+        ? coinbase.loadCoinbaseAccounts()
+        : Promise.resolve(),
+    ]);
+  }
 
   return (
     <main className="app-shell">
       <Hero status={watchlist.status} />
-      <SchwabPanel
-        accounts={schwab.schwabAccounts}
-        loading={schwab.schwabLoading}
-        message={schwab.schwabMessage}
-        onConnect={schwab.connectSchwab}
-        onLoadAccounts={schwab.loadSchwabAccounts}
-        status={schwab.schwabStatus}
+      <BrokeragePanel
+        coinbase={coinbase}
+        onLoadAllAccounts={loadAllAccounts}
+        schwab={schwab}
       />
       <PortfolioPanel
         allocations={portfolio.categoryAllocations}

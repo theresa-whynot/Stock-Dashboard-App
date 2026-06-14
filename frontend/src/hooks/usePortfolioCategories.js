@@ -11,14 +11,14 @@ import {
   writeStorageValue,
 } from "../utils/storage";
 
-export function usePortfolioCategories(accounts) {
+export function usePortfolioCategories(accounts, coinbasePositions = []) {
   const [categoryBySymbol, setCategoryBySymbol] = useState(() =>
     readSavedCategories(),
   );
 
   const portfolioPositions = useMemo(
-    () => getPortfolioPositions(accounts, categoryBySymbol),
-    [accounts, categoryBySymbol],
+    () => getPortfolioPositions(accounts, categoryBySymbol, coinbasePositions),
+    [accounts, categoryBySymbol, coinbasePositions],
   );
   const totalPortfolioValue = useMemo(
     () => getTotalPortfolioValue(accounts, portfolioPositions),
