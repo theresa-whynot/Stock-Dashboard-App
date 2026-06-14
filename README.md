@@ -263,6 +263,10 @@ npm run lint
 npm run build
 ```
 
+Use the form on the dashboard to add the stock symbols you want to watch. The
+watchlist is saved locally in your browser with `localStorage`, so it does not
+need accounts, a database, or cloud hosting.
+
 ## Next ideas
 
 - Add automatic polling with visible "last updated" timestamps.

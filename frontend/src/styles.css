@@ -110,6 +110,26 @@ input::placeholder {
   color: #6f647e;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  color: #e5eefb;
+  background: rgba(15, 23, 42, 0.92);
+  font: inherit;
+}
+
+input::placeholder {
+  color: #64748b;
+}
+
 .app-shell {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
@@ -196,7 +216,6 @@ h2 {
 }
 
 .status-card span,
-.summary-grid span,
 .stock-row span {
   color: var(--color-muted);
 }
@@ -209,13 +228,37 @@ h2 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.integration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.helper-text {
+  margin: 18px 0 0;
+  color: #a6b3c4;
+}
+
+.account-panel {
   margin: 24px 0;
 }
 
-.summary-grid article {
+.account-list {
   display: grid;
-  gap: 10px;
-  padding: 24px;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.account-card {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(30, 41, 59, 0.72);
 }
 
 .summary-grid strong {
@@ -228,12 +271,140 @@ h2 {
   padding: clamp(22px, 4vw, 32px);
 }
 
-.panel-header,
-.stock-row {
+.portfolio-panel {
+  margin-bottom: 24px;
+}
+
+.portfolio-total {
+  display: grid;
+  gap: 6px;
+  text-align: right;
+}
+
+.portfolio-total span {
+  color: #94a3b8;
+  font-size: 0.86rem;
+}
+
+.portfolio-total strong {
+  font-size: 1.5rem;
+}
+
+.allocation-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.allocation-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(30, 41, 59, 0.72);
+}
+
+.allocation-card div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.allocation-card span,
+.allocation-card p,
+.allocation-card small,
+.positions-header span {
+  color: #94a3b8;
+}
+
+.allocation-card strong {
+  color: #71f5b5;
+  font-size: 1.6rem;
+}
+
+.allocation-card p {
+  min-height: 54px;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.allocation-card small {
+  font-weight: 700;
+}
+
+.allocation-bar {
+  overflow: hidden;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.allocation-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #71f5b5, #38bdf8);
+}
+
+.positions-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  margin-top: 30px;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.positions-table {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.positions-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.7fr) minmax(180px, 1.6fr) minmax(90px, 0.7fr) minmax(120px, 0.9fr) minmax(180px, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(30, 41, 59, 0.72);
+}
+
+.positions-heading {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.category-select {
+  display: grid;
+  gap: 6px;
+}
+
+.category-select span {
+  display: none;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.empty-state {
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 18px;
+  color: #94a3b8;
+  text-align: center;
 }
 
 .integration-actions {
@@ -453,6 +624,22 @@ h3 {
   font-weight: 800;
 }
 
+.watchlist-form {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 28px;
+}
+
+.watchlist-form label {
+  display: grid;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 .stock-row > div {
   display: grid;
   gap: 5px;
@@ -500,6 +687,12 @@ h3 {
   .positions-row > .category-select {
     grid-column: 1 / -1;
   }
+}
+
+.ghost-button {
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: #cbd5e1;
+  background: transparent;
 }
 
 @media (max-width: 720px) {
