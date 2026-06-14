@@ -1,12 +1,4 @@
-async function parseJsonResponse(response, fallbackMessage) {
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.detail ?? fallbackMessage);
-  }
-
-  return data;
-}
+import { parseJsonResponse } from "./response";
 
 export async function getSchwabStatus() {
   const response = await fetch("/api/schwab/status");

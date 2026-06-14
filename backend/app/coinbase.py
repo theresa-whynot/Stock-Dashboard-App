@@ -5,6 +5,7 @@ from typing import Any
 
 import httpx
 import jwt
+from jwt import PyJWTError
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Query
 
@@ -33,7 +34,7 @@ def _api_private_key() -> str | None:
 
 
 def _jwt_algorithm() -> str:
-    return os.getenv("COINBASE_JWT_ALGORITHM", "ES256")
+    return os.getenv("COINBASE_JWT_ALGORITHM", "EdDSA")
 
 
 def _configured() -> bool:
@@ -61,23 +62,34 @@ def _build_jwt(method: str, path: str) -> str:
     now = int(time.time())
     uri = f"{method.upper()} {COINBASE_API_HOST}{path}"
 
-    return jwt.encode(
-        {
-            "sub": api_key_name,
-            "iss": "coinbase-cloud",
-            "nbf": now,
-            "exp": now + 120,
-            "aud": ["cdp_service"],
-            "uri": uri,
-        },
-        api_private_key,
-        algorithm=_jwt_algorithm(),
-        headers={
-            "kid": api_key_name,
-            "nonce": secrets.token_hex(16),
-            "typ": "JWT",
-        },
-    )
+    try:
+        return jwt.encode(
+            {
+                "sub": api_key_name,
+                "iss": "coinbase-cloud",
+                "nbf": now,
+                "exp": now + 120,
+                "aud": ["cdp_service"],
+                "uri": uri,
+            },
+            api_private_key,
+            algorithm=_jwt_algorithm(),
+            headers={
+                "kid": api_key_name,
+                "nonce": secrets.token_hex(16),
+                "typ": "JWT",
+            },
+        )
+    except (PyJWTError, ValueError, TypeError) as error:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Unable to sign Coinbase API request. Check COINBASE_API_KEY_NAME, "
+                "COINBASE_API_PRIVATE_KEY, and COINBASE_JWT_ALGORITHM in backend/.env. "
+                "For Ed25519 keys, use COINBASE_JWT_ALGORITHM=EdDSA and preserve "
+                "the private key header/footer and escaped newlines."
+            ),
+        ) from error
 
 
 async def _coinbase_get(
