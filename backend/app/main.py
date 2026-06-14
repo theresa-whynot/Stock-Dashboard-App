@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.market_data import get_live_stock_quotes, parse_stock_symbols
 from app.schwab import router as schwab_router
 
 app = FastAPI(
@@ -19,13 +20,6 @@ app.add_middleware(
 
 app.include_router(schwab_router)
 
-SAMPLE_STOCKS = [
-    {"symbol": "AAPL", "name": "Apple Inc.", "price": 189.98, "change": 1.24},
-    {"symbol": "MSFT", "name": "Microsoft Corp.", "price": 421.53, "change": -0.36},
-    {"symbol": "NVDA", "name": "NVIDIA Corp.", "price": 926.69, "change": 2.18},
-    {"symbol": "TSLA", "name": "Tesla Inc.", "price": 177.55, "change": -1.08},
-]
-
 
 @app.get("/api/health")
 def health_check():
@@ -33,5 +27,11 @@ def health_check():
 
 
 @app.get("/api/stocks")
-def list_stocks():
-    return {"stocks": SAMPLE_STOCKS}
+async def list_stocks(
+    symbols: str | None = Query(
+        default=None,
+        description="Comma-separated stock symbols, for example AAPL,MSFT,NVDA.",
+    ),
+):
+    requested_symbols = parse_stock_symbols(symbols)
+    return {"stocks": await get_live_stock_quotes(requested_symbols)}

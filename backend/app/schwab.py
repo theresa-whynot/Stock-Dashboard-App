@@ -141,6 +141,10 @@ async def _get_access_token() -> str:
     return refreshed_tokens["access_token"]
 
 
+async def get_schwab_access_token() -> str:
+    return await _get_access_token()
+
+
 @router.get("/status")
 def schwab_status():
     return {"configured": _configured(), "connected": _token_path().exists()}

@@ -1,11 +1,22 @@
 # Stock Dashboard App
 
-A simple full-stack starter for a stock market dashboard.
+A local-first stock dashboard built with React, Vite, Python, and FastAPI.
 
-- **Frontend:** React + Vite
-- **Backend:** Python + FastAPI
-- **API:** sample stock watchlist data under `/api/stocks`
-- **Local storage:** added symbols are saved in your browser
+The app can:
+
+- Keep a browser-saved stock watchlist.
+- Pull live quote data from the Schwab Market Data API.
+- Refresh watchlist quotes without reloading the browser page.
+- Connect to Schwab with OAuth.
+- Load read-only Schwab account and position details.
+- Refresh Schwab account and portfolio data after accounts are loaded.
+- Group Schwab positions into portfolio categories.
+- Show each category's share of the portfolio.
+- Let you manually override position categories.
+- Present the dashboard with a black, green, and purple mobile-friendly theme.
+
+The app does not include trading, order placement, user accounts, a database, or
+production deployment configuration.
 
 ## Project structure
 
@@ -15,10 +26,17 @@ A simple full-stack starter for a stock market dashboard.
 │   ├── .env.example
 │   ├── app/
 │   │   ├── main.py
+│   │   ├── market_data.py
 │   │   └── schwab.py
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── tests/
 └── frontend/
     ├── src/
+    │   ├── api/
+    │   ├── components/
+    │   ├── data/
+    │   ├── hooks/
+    │   ├── utils/
     │   ├── App.jsx
     │   ├── main.jsx
     │   └── styles.css
@@ -26,7 +44,16 @@ A simple full-stack starter for a stock market dashboard.
     └── package.json
 ```
 
-## Backend setup
+## Local development
+
+Run two processes during development:
+
+1. the FastAPI backend
+2. the Vite React frontend
+
+FastAPI is the backend, so there is not a third separate API process to start.
+
+### Backend
 
 ```bash
 cd backend
@@ -36,77 +63,13 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-The API runs at `http://127.0.0.1:8000`.
+The backend runs at:
 
-Useful endpoints:
+```text
+http://127.0.0.1:8000
+```
 
-- `GET /api/health`
-- `GET /api/stocks`
-- `GET /api/schwab/status`
-- `GET /api/schwab/login-url`
-- `GET /api/schwab/accounts`
-
-## Schwab account details
-
-The Schwab integration is local-first and read-only in this starter app. The
-React frontend never receives your Schwab app secret. OAuth tokens are saved by
-the Python backend in `.schwab_tokens.json`, which is ignored by git.
-
-To enable it:
-
-1. Create an individual app in the Charles Schwab Developer Portal.
-2. Set the app callback/redirect URL to:
-
-   ```text
-   http://127.0.0.1:8000/api/schwab/callback
-   ```
-
-3. Copy the example environment file:
-
-   ```bash
-   cd backend
-   cp .env.example .env
-   ```
-
-4. Fill in your Schwab app key and secret in `backend/.env`:
-
-   ```bash
-   SCHWAB_CLIENT_ID=your-schwab-app-key
-   SCHWAB_CLIENT_SECRET=your-schwab-app-secret
-   SCHWAB_REDIRECT_URI=http://127.0.0.1:8000/api/schwab/callback
-   FRONTEND_URL=http://localhost:5173
-   ```
-
-5. Start the backend and frontend, then use the **Connect Schwab** button in the
-   dashboard.
-
-This starter only exposes read-only account detail routes. It does not include
-any trading or order placement endpoints.
-
-## Portfolio categories
-
-After Schwab is connected, click **Load accounts** to bring in your current
-positions. The dashboard shows each position and groups it into one of four
-portfolio categories:
-
-- Low risk index
-- Dividend
-- Growth
-- Speculative
-
-The category percentages are calculated from the current market value of the
-positions Schwab returns. If Schwab returns a total account liquidation value,
-the dashboard uses that as the total portfolio value; otherwise it falls back to
-the sum of loaded position values.
-
-The app makes starter guesses from the symbol and asset type. For example,
-broad ETFs and mutual funds are treated as low risk index positions, common
-dividend symbols are treated as dividend positions, and common growth symbols
-are treated as growth positions. You can change any category from the dropdown
-next to a position. Those category choices are saved locally in your browser
-with `localStorage`.
-
-## Frontend setup
+### Frontend
 
 Open a second terminal:
 
@@ -116,7 +79,189 @@ npm install
 npm run dev
 ```
 
-The React app runs at `http://localhost:5173` and proxies `/api` requests to the FastAPI server.
+The frontend runs at:
+
+```text
+http://localhost:5173
+```
+
+The Vite dev server proxies `/api` requests to the FastAPI backend.
+
+## Backend API
+
+Useful endpoints:
+
+- `GET /api/health`
+- `GET /api/stocks?symbols=AAPL,MSFT,NVDA`
+- `GET /api/schwab/status`
+- `GET /api/schwab/login-url`
+- `GET /api/schwab/accounts`
+
+## Schwab setup
+
+The Schwab integration is local-first and read-only. The React frontend never
+receives your Schwab app secret.
+
+### 1. Register a Schwab developer app
+
+Create an individual app in the Charles Schwab Developer Portal.
+
+Set the callback/redirect URL to:
+
+```text
+http://127.0.0.1:8000/api/schwab/callback
+```
+
+### 2. Create `backend/.env`
+
+Copy the example file:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Fill in your Schwab app credentials:
+
+```env
+SCHWAB_CLIENT_ID=your-schwab-app-key
+SCHWAB_CLIENT_SECRET=your-schwab-app-secret
+SCHWAB_REDIRECT_URI=http://127.0.0.1:8000/api/schwab/callback
+FRONTEND_URL=http://localhost:5173
+DEFAULT_STOCK_SYMBOLS=AAPL,MSFT,NVDA,TSLA
+```
+
+The `DEFAULT_STOCK_SYMBOLS` value is used by `GET /api/stocks` when no
+`symbols` query parameter is provided.
+
+### 3. Connect from the dashboard
+
+Start the backend and frontend, then click **Connect Schwab** in the dashboard.
+
+After Schwab login and approval, the backend exchanges the OAuth code for
+runtime tokens and saves them locally in:
+
+```text
+backend/.schwab_tokens.json
+```
+
+You should not create this JSON file manually. It is generated by the OAuth
+callback flow and ignored by git.
+
+The backend also creates a temporary OAuth state file:
+
+```text
+backend/.schwab_oauth_state
+```
+
+That file is also ignored by git.
+
+## Live market data
+
+The watchlist endpoint pulls live quotes from Schwab:
+
+```http
+GET /api/stocks?symbols=AAPL,MSFT,NVDA
+```
+
+The frontend asks for quotes for the symbols currently in the watchlist.
+
+Quote data loads when:
+
+- the frontend first loads
+- the saved watchlist is loaded from `localStorage`
+- you add a symbol
+- you remove a symbol
+- you click **Refresh quotes**
+- the browser page is refreshed
+
+The **Refresh quotes** button updates only the watchlist quote data for the
+current symbols. It does not reload the whole browser page.
+
+The app does not stream quotes or poll automatically in the background.
+
+## Schwab account and portfolio data
+
+After Schwab is connected, click **Load accounts** in the dashboard.
+
+The app will:
+
+- load read-only Schwab account details
+- load positions when Schwab returns them
+- show account type, account identifier, estimated value, and position count
+- calculate total portfolio value from Schwab liquidation values when available
+- fall back to summed position values if account totals are unavailable
+
+After accounts have loaded, the button changes to **Refresh accounts**. Clicking
+it reloads Schwab account details and portfolio positions without reloading the
+whole browser page.
+
+The app does not poll account data automatically in the background.
+
+## Portfolio categories
+
+Loaded Schwab positions are grouped into four categories:
+
+- Low risk index
+- Growth
+- Dividend
+- Speculative
+
+The app makes starter category guesses from each position's symbol and asset
+type. For example, broad ETFs and mutual funds are treated as low risk index
+positions, common dividend symbols are treated as dividend positions, and common
+growth symbols are treated as growth positions.
+
+You can change any position category from the dropdown next to the position.
+Those category choices are saved in browser `localStorage`.
+
+Category percentages are calculated as:
+
+```text
+category market value / total portfolio value
+```
+
+## Watchlist
+
+The watchlist is saved in browser `localStorage`.
+
+You can:
+
+- add a stock symbol
+- optionally provide a company name
+- remove symbols
+- keep the watchlist locally without a backend database
+- load live quotes for the current watchlist after Schwab is connected
+- refresh live quotes with the **Refresh quotes** button
+
+## Frontend theme
+
+The dashboard uses a simple black, green, and purple theme with responsive
+layouts for smaller screens.
+
+Mobile behavior includes:
+
+- stacked dashboard panels
+- single-column forms
+- full-width action buttons on narrow screens
+- readable stacked portfolio position rows
+
+## Tests and verification
+
+Backend tests:
+
+```bash
+cd backend
+pytest
+```
+
+Frontend checks:
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
 
 Use the form on the dashboard to add the stock symbols you want to watch. The
 watchlist is saved locally in your browser with `localStorage`, so it does not
@@ -124,7 +269,7 @@ need accounts, a database, or cloud hosting.
 
 ## Next ideas
 
-- Replace sample stock data with a real market data provider.
+- Add automatic polling with visible "last updated" timestamps.
 - Add charts for historical prices.
-- Sync the local watchlist with the backend if you want multi-device access.
-- Add backend tests for API routes.
+- Sync the watchlist with a backend database for multi-device access.
+- Add production-grade encrypted token storage.

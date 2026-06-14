@@ -1,85 +1,11 @@
-import { useEffect, useState } from "react";
-
-const storageKey = "stock-dashboard-watchlist";
-const categoryStorageKey = "stock-dashboard-position-categories";
-
-const portfolioCategories = {
-  lowRiskIndex: {
-    label: "Low risk index",
-    description: "Broad index ETFs, mutual funds, and diversified funds.",
-  },
-  dividend: {
-    label: "Dividend",
-    description: "Income-oriented stocks and dividend-focused funds.",
-  },
-  growth: {
-    label: "Growth",
-    description: "Companies where the main goal is share price growth.",
-  },
-  speculative: {
-    label: "Speculative",
-    description: "Higher-risk individual positions or unproven ideas.",
-  },
-};
-
-const indexSymbols = new Set([
-  "DIA",
-  "ITOT",
-  "IVV",
-  "IWM",
-  "QQQ",
-  "QQQM",
-  "SCHA",
-  "SCHB",
-  "SCHX",
-  "SPY",
-  "SWPPX",
-  "VEA",
-  "VOO",
-  "VTI",
-  "VT",
-  "VTSAX",
-  "VWO",
-]);
-
-const dividendSymbols = new Set([
-  "ABBV",
-  "DGRO",
-  "HDV",
-  "JNJ",
-  "KO",
-  "MO",
-  "NOBL",
-  "O",
-  "PEP",
-  "PG",
-  "SCHD",
-  "T",
-  "VIG",
-  "VYM",
-  "XOM",
-]);
-
-const growthSymbols = new Set([
-  "AAPL",
-  "AMZN",
-  "AMD",
-  "CRM",
-  "GOOG",
-  "GOOGL",
-  "META",
-  "MSFT",
-  "NFLX",
-  "NVDA",
-  "SHOP",
-  "TSLA",
-]);
-
-const fallbackStocks = [
-  { symbol: "AAPL", name: "Apple Inc.", price: 189.98, change: 1.24 },
-  { symbol: "MSFT", name: "Microsoft Corp.", price: 421.53, change: -0.36 },
-  { symbol: "NVDA", name: "NVIDIA Corp.", price: 926.69, change: 2.18 },
-];
+import { Hero } from "./components/Hero";
+import { PortfolioPanel } from "./components/PortfolioPanel";
+import { SchwabPanel } from "./components/SchwabPanel";
+import { SummaryCards } from "./components/SummaryCards";
+import { WatchlistPanel } from "./components/WatchlistPanel";
+import { usePortfolioCategories } from "./hooks/usePortfolioCategories";
+import { useSchwabAccounts } from "./hooks/useSchwabAccounts";
+import { useWatchlist } from "./hooks/useWatchlist";
 
 function readSavedStocks() {
   const savedStocks = window.localStorage.getItem(storageKey);
@@ -278,98 +204,9 @@ function getCategoryAllocations(positions, totalPortfolioValue) {
 }
 
 export default function App() {
-  const [initialSavedStocks] = useState(() => readSavedStocks());
-  const [stocks, setStocks] = useState(() => initialSavedStocks ?? fallbackStocks);
-  const [status, setStatus] = useState(
-    initialSavedStocks
-      ? "Showing your locally saved watchlist"
-      : "Loading sample market data...",
-  );
-  const [symbol, setSymbol] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [schwabStatus, setSchwabStatus] = useState(null);
-  const [schwabMessage, setSchwabMessage] = useState("Checking Schwab setup...");
-  const [schwabAccounts, setSchwabAccounts] = useState([]);
-  const [schwabLoading, setSchwabLoading] = useState(false);
-  const [categoryBySymbol, setCategoryBySymbol] = useState(() =>
-    readSavedCategories(),
-  );
-
-  const portfolioPositions = getPortfolioPositions(
-    schwabAccounts,
-    categoryBySymbol,
-  );
-  const totalPortfolioValue = getTotalPortfolioValue(
-    schwabAccounts,
-    portfolioPositions,
-  );
-  const categoryAllocations = getCategoryAllocations(
-    portfolioPositions,
-    totalPortfolioValue,
-  );
-
-  useEffect(() => {
-    if (initialSavedStocks) {
-      return;
-    }
-
-    async function loadStocks() {
-      try {
-        const response = await fetch("/api/stocks");
-
-        if (!response.ok) {
-          throw new Error("Backend returned an error");
-        }
-
-        const data = await response.json();
-        setStocks(data.stocks);
-        setStatus("Live from the Python API");
-      } catch {
-        setStatus("Showing local sample data until the backend is running");
-      }
-    }
-
-    loadStocks();
-  }, [initialSavedStocks]);
-
-  useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify(stocks));
-  }, [stocks]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      categoryStorageKey,
-      JSON.stringify(categoryBySymbol),
-    );
-  }, [categoryBySymbol]);
-
-  useEffect(() => {
-    async function loadStatus() {
-      try {
-        const response = await fetch("/api/schwab/status");
-        const data = await response.json();
-
-        setSchwabStatus(data);
-
-        if (!data.configured) {
-          setSchwabMessage(
-            "Add Schwab API credentials to backend/.env to enable account details.",
-          );
-          return;
-        }
-
-        setSchwabMessage(
-          data.connected
-            ? "Schwab is connected. Load account details when you are ready."
-            : "Schwab is configured. Connect your account to load details.",
-        );
-      } catch {
-        setSchwabMessage("Start the Python backend to use Schwab account details.");
-      }
-    }
-
-    loadStatus();
-  }, []);
+  const watchlist = useWatchlist();
+  const schwab = useSchwabAccounts();
+  const portfolio = usePortfolioCategories(schwab.schwabAccounts);
 
   async function connectSchwab() {
     setSchwabLoading(true);
@@ -462,221 +299,33 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <section className="hero">
-        <div>
-          <p className="eyebrow">Stock Dashboard Starter</p>
-          <h1>Track your portfolio risk</h1>
-          <p className="hero-copy">
-            A lightweight React and Python boilerplate to track risk on your
-            positions from multiple brokerages.
-          </p>
-        </div>
-        <div className="status-card">
-          <span>API Status</span>
-          <strong>{status}</strong>
-        </div>
-      </section>
-
-      <section className="panel account-panel">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">Schwab integration</p>
-            <h2>Read-only account details</h2>
-          </div>
-          <div className="integration-actions">
-            <button
-              disabled={!schwabStatus?.configured || schwabLoading}
-              onClick={connectSchwab}
-              type="button"
-            >
-              Connect Schwab
-            </button>
-            <button
-              className="ghost-button"
-              disabled={!schwabStatus?.connected || schwabLoading}
-              onClick={loadSchwabAccounts}
-              type="button"
-            >
-              Load accounts
-            </button>
-          </div>
-        </div>
-
-        <p className="helper-text">{schwabMessage}</p>
-
-        {schwabAccounts.length > 0 && (
-          <div className="account-list">
-            {schwabAccounts.map((account, index) => {
-              const summary = getAccountSummary(account);
-
-              return (
-                <article className="account-card" key={summary.accountNumber}>
-                  <div>
-                    <span>Account {index + 1}</span>
-                    <strong>{summary.accountType}</strong>
-                  </div>
-                  <div>
-                    <span>Account identifier</span>
-                    <strong>{summary.accountNumber}</strong>
-                  </div>
-                  <div>
-                    <span>Estimated value</span>
-                    <strong>{formatCurrency(summary.liquidationValue)}</strong>
-                  </div>
-                  <div>
-                    <span>Positions</span>
-                    <strong>{summary.positions.length}</strong>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="panel portfolio-panel">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">Portfolio categories</p>
-            <h2>Current positions by risk style</h2>
-          </div>
-          <div className="portfolio-total">
-            <span>Total portfolio value</span>
-            <strong>{formatCurrency(totalPortfolioValue)}</strong>
-          </div>
-        </div>
-
-        <p className="helper-text">
-          Positions load from Schwab after you connect your account. Starter
-          categories are guessed from symbol and asset type, and any changes you
-          make here are saved locally in this browser.
-        </p>
-
-        <div className="allocation-grid">
-          {categoryAllocations.map((allocation) => (
-            <article className="allocation-card" key={allocation.key}>
-              <div>
-                <span>{allocation.label}</span>
-                <strong>{formatPercent(allocation.percent)}</strong>
-              </div>
-              <div className="allocation-bar" aria-hidden="true">
-                <span style={{ width: `${Math.min(allocation.percent, 100)}%` }} />
-              </div>
-              <p>{allocation.description}</p>
-              <small>
-                {formatCurrency(allocation.value)} across {allocation.count}{" "}
-                {allocation.count === 1 ? "position" : "positions"}
-              </small>
-            </article>
-          ))}
-        </div>
-
-        <div className="positions-header">
-          <h3>Current positions</h3>
-          <span>{portfolioPositions.length} loaded from Schwab</span>
-        </div>
-
-        {portfolioPositions.length > 0 ? (
-          <div className="positions-table">
-            <div className="positions-row positions-heading">
-              <span>Symbol</span>
-              <span>Name</span>
-              <span>Quantity</span>
-              <span>Market value</span>
-              <span>Category</span>
-            </div>
-            {portfolioPositions.map((position) => (
-              <div
-                className="positions-row"
-                key={`${position.accountNumber}-${position.symbol}`}
-              >
-                <strong>{position.symbol}</strong>
-                <span>{position.name}</span>
-                <span>{Number(position.quantity).toLocaleString()}</span>
-                <span>{formatCurrency(position.marketValue)}</span>
-                <label className="category-select">
-                  <span>Category</span>
-                  <select
-                    onChange={(event) =>
-                      updatePositionCategory(position.symbol, event.target.value)
-                    }
-                    value={position.category}
-                  >
-                    {Object.entries(portfolioCategories).map(
-                      ([categoryKey, category]) => (
-                        <option key={categoryKey} value={categoryKey}>
-                          {category.label}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </label>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">
-            Connect Schwab and load accounts to see your current positions here.
-          </div>
-        )}
-      </section>
-
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">Watchlist</p>
-            <h2>Featured stocks</h2>
-          </div>
-        </div>
-
-        <form className="watchlist-form" onSubmit={addStock}>
-          <label>
-            Symbol
-            <input
-              maxLength="8"
-              onChange={(event) => setSymbol(event.target.value)}
-              placeholder="AAPL"
-              value={symbol}
-            />
-          </label>
-          <label>
-            Company name
-            <input
-              onChange={(event) => setCompanyName(event.target.value)}
-              placeholder="Apple Inc."
-              value={companyName}
-            />
-          </label>
-          <button type="submit">Add symbol</button>
-        </form>
-
-        <div className="stock-list">
-          {stocks.map((stock) => (
-            <article className="stock-row" key={stock.symbol}>
-              <div>
-                <strong>{stock.symbol}</strong>
-                <span>{stock.name}</span>
-              </div>
-              <div className="price-block">
-                <strong>
-                  {stock.price > 0 ? `$${stock.price.toFixed(2)}` : "Watching"}
-                </strong>
-                <span className={stock.change >= 0 ? "positive" : "negative"}>
-                  {stock.change >= 0 ? "+" : ""}
-                  {stock.change.toFixed(2)}%
-                </span>
-              </div>
-              <button
-                className="ghost-button"
-                onClick={() => removeStock(stock.symbol)}
-                type="button"
-              >
-                Remove
-              </button>
-            </article>
-          ))}
-        </div>
-      </section>
+      <Hero status={watchlist.status} />
+      <SummaryCards stocks={watchlist.stocks} />
+      <SchwabPanel
+        accounts={schwab.schwabAccounts}
+        loading={schwab.schwabLoading}
+        message={schwab.schwabMessage}
+        onConnect={schwab.connectSchwab}
+        onLoadAccounts={schwab.loadSchwabAccounts}
+        status={schwab.schwabStatus}
+      />
+      <PortfolioPanel
+        allocations={portfolio.categoryAllocations}
+        onUpdatePositionCategory={portfolio.updatePositionCategory}
+        positions={portfolio.portfolioPositions}
+        totalPortfolioValue={portfolio.totalPortfolioValue}
+      />
+      <WatchlistPanel
+        companyName={watchlist.companyName}
+        loading={watchlist.loading}
+        onAddStock={watchlist.addStock}
+        onCompanyNameChange={watchlist.setCompanyName}
+        onRefreshQuotes={watchlist.refreshStocks}
+        onRemoveStock={watchlist.removeStock}
+        onSymbolChange={watchlist.setSymbol}
+        stocks={watchlist.stocks}
+        symbol={watchlist.symbol}
+      />
     </main>
   );
 }
