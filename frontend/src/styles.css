@@ -137,8 +137,7 @@ input::placeholder {
 }
 
 .hero,
-.panel,
-.summary-grid article {
+.panel {
   border: 1px solid var(--color-border);
   border-radius: 30px;
   background:
@@ -224,12 +223,6 @@ h2 {
   color: var(--color-soft);
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
 .integration-actions {
   display: flex;
   flex-wrap: wrap;
@@ -259,12 +252,6 @@ h2 {
   padding: 18px;
   border-radius: 18px;
   background: rgba(30, 41, 59, 0.72);
-}
-
-.summary-grid strong {
-  color: var(--color-purple-soft);
-  font-size: 2.35rem;
-  letter-spacing: -0.04em;
 }
 
 .panel {
@@ -702,7 +689,6 @@ h3 {
   }
 
   .hero,
-  .summary-grid,
   .watchlist-form,
   .account-card,
   .allocation-grid {
@@ -714,15 +700,6 @@ h3 {
   .stock-row {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .summary-grid {
-    gap: 12px;
-    margin: 18px 0;
-  }
-
-  .summary-grid article {
-    padding: 20px;
   }
 
   .integration-actions {
@@ -773,8 +750,7 @@ h3 {
   }
 
   .hero,
-  .panel,
-  .summary-grid article {
+  .panel {
     border-radius: 22px;
   }
 

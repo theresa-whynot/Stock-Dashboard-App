@@ -1,7 +1,6 @@
 import { Hero } from "./components/Hero";
 import { PortfolioPanel } from "./components/PortfolioPanel";
 import { SchwabPanel } from "./components/SchwabPanel";
-import { SummaryCards } from "./components/SummaryCards";
 import { WatchlistPanel } from "./components/WatchlistPanel";
 import { usePortfolioCategories } from "./hooks/usePortfolioCategories";
 import { useSchwabAccounts } from "./hooks/useSchwabAccounts";
@@ -300,7 +299,6 @@ export default function App() {
   return (
     <main className="app-shell">
       <Hero status={watchlist.status} />
-      <SummaryCards stocks={watchlist.stocks} />
       <SchwabPanel
         accounts={schwab.schwabAccounts}
         loading={schwab.schwabLoading}

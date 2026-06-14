@@ -203,8 +203,8 @@ The app does not poll account data automatically in the background.
 Loaded Schwab positions are grouped into four categories:
 
 - Low risk index
-- Growth
 - Dividend
+- Growth
 - Speculative
 
 The app makes starter category guesses from each position's symbol and asset
