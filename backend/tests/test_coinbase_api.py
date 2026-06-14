@@ -18,6 +18,17 @@ def test_coinbase_status_reports_not_configured(monkeypatch):
     assert response.json() == {"configured": False}
 
 
+def test_coinbase_accounts_returns_json_for_invalid_jwt_config(monkeypatch):
+    monkeypatch.setenv("COINBASE_API_KEY_NAME", "test-key")
+    monkeypatch.setenv("COINBASE_API_PRIVATE_KEY", "not-a-valid-private-key")
+    monkeypatch.setenv("COINBASE_JWT_ALGORITHM", "EdDSA")
+
+    response = client.get("/api/coinbase/accounts")
+
+    assert response.status_code == 503
+    assert "Unable to sign Coinbase API request" in response.json()["detail"]
+
+
 def test_parse_crypto_symbols_normalizes_common_inputs():
     assert parse_crypto_symbols("btc, ETH-USD, sol/usd,btc") == [
         "BTC",

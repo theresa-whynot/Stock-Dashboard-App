@@ -1,3 +1,5 @@
+import { parseJsonResponse } from "./response";
+
 const cryptoSymbols = new Set([
   "ADA",
   "AVAX",
@@ -40,11 +42,7 @@ async function fetchQuotes(path, key, symbols) {
 
   const params = new URLSearchParams({ symbols: symbols.join(",") });
   const response = await fetch(`${path}?${params.toString()}`);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.detail ?? "Unable to load market data.");
-  }
+  const data = await parseJsonResponse(response, "Unable to load market data.");
 
   return Array.isArray(data[key]) ? data[key] : [];
 }

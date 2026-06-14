@@ -140,8 +140,8 @@ DEFAULT_STOCK_SYMBOLS=AAPL,MSFT,NVDA,TSLA
 DEFAULT_CRYPTO_SYMBOLS=BTC,ETH,SOL
 
 COINBASE_API_KEY_NAME=organizations/your-org-id/apiKeys/your-key-id
-COINBASE_API_PRIVATE_KEY=-----BEGIN EC PRIVATE KEY-----\nyour-private-key\n-----END EC PRIVATE KEY-----\n
-COINBASE_JWT_ALGORITHM=ES256
+COINBASE_API_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nyour-private-key\n-----END PRIVATE KEY-----\n
+COINBASE_JWT_ALGORITHM=EdDSA
 ```
 
 The `DEFAULT_STOCK_SYMBOLS` value is used by `GET /api/stocks` when no
@@ -214,18 +214,20 @@ The app does not poll account data automatically in the background.
 
 The Coinbase integration uses Coinbase Advanced Trade API credentials stored in
 `backend/.env`. The React frontend never receives your Coinbase private key.
+Do not put real credentials only in `.env.example`; that file is just a template.
 
 Set:
 
 ```env
 COINBASE_API_KEY_NAME=organizations/your-org-id/apiKeys/your-key-id
-COINBASE_API_PRIVATE_KEY=-----BEGIN EC PRIVATE KEY-----\nyour-private-key\n-----END EC PRIVATE KEY-----\n
-COINBASE_JWT_ALGORITHM=ES256
+COINBASE_API_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nyour-private-key\n-----END PRIVATE KEY-----\n
+COINBASE_JWT_ALGORITHM=EdDSA
 ```
 
 `COINBASE_API_PRIVATE_KEY` can stay on one line with escaped `\n` newlines. If
-Coinbase gives you a different signing algorithm, update `COINBASE_JWT_ALGORITHM`
-to match the key type.
+Coinbase gives you an Ed25519 key, use `COINBASE_JWT_ALGORITHM=EdDSA`. If
+Coinbase gives you an ECDSA key, update `COINBASE_JWT_ALGORITHM` to match that
+key type.
 
 Useful Coinbase endpoints:
 
