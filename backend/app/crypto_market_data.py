@@ -8,21 +8,10 @@ from fastapi import HTTPException
 DEFAULT_CRYPTO_SYMBOLS = ("BTC", "ETH", "SOL")
 MAX_CRYPTO_SYMBOLS_PER_REQUEST = 25
 CRYPTO_PRODUCT_URL_TEMPLATE = os.getenv(
-    "COINBASE_CRYPTO_TICKER_URL_TEMPLATE",
-    "https://api.coinbase.com/api/v3/brokerage/market/products/{product_id}/ticker",
+    "COINBASE_CRYPTO_PRODUCT_URL_TEMPLATE",
+    "https://api.coinbase.com/api/v3/brokerage/market/products/{product_id}",
 )
 CRYPTO_SYMBOL_PATTERN = re.compile(r"^[A-Z0-9-]{2,20}$")
-
-CRYPTO_NAMES = {
-    "BTC": "Bitcoin",
-    "ETH": "Ethereum",
-    "SOL": "Solana",
-    "USDC": "USD Coin",
-    "DOGE": "Dogecoin",
-    "ADA": "Cardano",
-    "AVAX": "Avalanche",
-    "LINK": "Chainlink",
-}
 
 
 def parse_crypto_symbols(raw_symbols: str | None) -> list[str]:
@@ -90,15 +79,6 @@ def _number_or_none(value: Any) -> float | None:
     return number_value
 
 
-def _first_trade(data: dict[str, Any]) -> dict[str, Any]:
-    trades = data.get("trades")
-
-    if isinstance(trades, list) and trades and isinstance(trades[0], dict):
-        return trades[0]
-
-    return {}
-
-
 def _normalize_crypto_quote(symbol: str, data: dict[str, Any] | None) -> dict[str, Any]:
     if not data:
         return {
@@ -108,22 +88,18 @@ def _normalize_crypto_quote(symbol: str, data: dict[str, Any] | None) -> dict[st
             "change": None,
             "available": False,
             "assetType": "crypto",
+            "productId": _product_id(symbol),
         }
 
-    trade = _first_trade(data)
-    price = _number_or_none(
-        data.get("price")
-        or data.get("last_trade_price")
-        or data.get("best_bid")
-        or data.get("best_ask")
-        or trade.get("price")
-    )
+    price = _number_or_none(data.get("price"))
+    change = _number_or_none(data.get("price_percentage_change_24h"))
+    name = data.get("base_name") or data.get("display_name") or symbol
 
     return {
         "symbol": symbol,
-        "name": CRYPTO_NAMES.get(symbol, symbol),
+        "name": str(name),
         "price": price,
-        "change": None,
+        "change": change,
         "available": price is not None,
         "assetType": "crypto",
         "productId": _product_id(symbol),
@@ -137,7 +113,6 @@ async def get_live_crypto_quotes(symbols: list[str]) -> list[dict[str, Any]]:
         for symbol in symbols:
             response = await client.get(
                 CRYPTO_PRODUCT_URL_TEMPLATE.format(product_id=_product_id(symbol)),
-                params={"limit": 1},
             )
 
             if response.status_code >= 400:
