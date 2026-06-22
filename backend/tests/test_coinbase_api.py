@@ -63,7 +63,10 @@ def test_list_crypto_uses_requested_symbols(monkeypatch):
             },
         ]
 
-    monkeypatch.setattr("app.main.get_live_crypto_quotes", fake_get_live_crypto_quotes)
+    monkeypatch.setattr(
+        "app.market_quotes.get_live_crypto_quotes",
+        fake_get_live_crypto_quotes,
+    )
 
     response = client.get("/api/crypto?symbols=btc,eth,btc")
 

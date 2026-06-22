@@ -34,7 +34,10 @@ def test_list_stocks_uses_requested_symbols(monkeypatch):
             },
         ]
 
-    monkeypatch.setattr("app.main.get_live_stock_quotes", fake_get_live_stock_quotes)
+    monkeypatch.setattr(
+        "app.market_quotes.get_live_stock_quotes",
+        fake_get_live_stock_quotes,
+    )
 
     response = client.get("/api/stocks?symbols=aapl,msft,aapl")
 

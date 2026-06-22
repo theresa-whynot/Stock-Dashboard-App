@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getMarketQuotes, isCryptoSymbol } from "../api/marketQuotesApi";
+import { getMarketQuotes } from "../api/marketQuotesApi";
 import { fallbackStocks } from "../data/fallbackStocks";
 import {
   readSavedStocks,
@@ -34,6 +34,7 @@ export function useWatchlist() {
           ...savedStock,
           ...stock,
           name: stock.name || savedStock?.name || stock.symbol,
+          assetType: stock.assetType ?? savedStock?.assetType,
         };
       }),
     );
@@ -51,7 +52,7 @@ export function useWatchlist() {
     setStatus("Refreshing live market data...");
 
     try {
-      const { errors, quotes } = await getMarketQuotes(requestedSymbols);
+      const { errors, quotes } = await getMarketQuotes(stocks);
       mergeLoadedStocks(quotes);
       setStatus(
         errors.length > 0
@@ -63,7 +64,7 @@ export function useWatchlist() {
     } finally {
       setLoading(false);
     }
-  }, [mergeLoadedStocks, stockSymbols]);
+  }, [mergeLoadedStocks, stockSymbols, stocks]);
 
   useEffect(() => {
     const requestedSymbols = stockSymbols.split(",").filter(Boolean);
@@ -79,7 +80,7 @@ export function useWatchlist() {
       setStatus("Loading live market data...");
 
       try {
-        const { errors, quotes } = await getMarketQuotes(requestedSymbols);
+        const { errors, quotes } = await getMarketQuotes(stocks);
 
         if (ignoreResponse) {
           return;
@@ -134,13 +135,10 @@ export function useWatchlist() {
       ...currentStocks,
       {
         symbol: trimmedSymbol,
-        name:
-          trimmedCompanyName ||
-          `${trimmedSymbol} ${isCryptoSymbol(trimmedSymbol) ? "crypto" : "stock"}`,
+        name: trimmedCompanyName || trimmedSymbol,
         price: null,
         change: null,
         available: false,
-        assetType: isCryptoSymbol(trimmedSymbol) ? "crypto" : "stock",
       },
     ]);
     setStatus("Loading live market data...");
