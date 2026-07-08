@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   getSchwabAccounts,
@@ -11,6 +11,29 @@ export function useSchwabAccounts() {
   const [schwabMessage, setSchwabMessage] = useState("Checking Schwab setup...");
   const [schwabAccounts, setSchwabAccounts] = useState([]);
   const [schwabLoading, setSchwabLoading] = useState(false);
+  const autoLoadStarted = useRef(false);
+
+  async function loadSchwabAccounts() {
+    setSchwabLoading(true);
+    setSchwabMessage("Loading Schwab account details...");
+
+    try {
+      const loadedAccounts = await getSchwabAccounts();
+      setSchwabAccounts(loadedAccounts);
+      setSchwabMessage("Schwab connected. Positions loaded into the portfolio panel.");
+      setSchwabStatus((currentStatus) =>
+        currentStatus
+          ? { ...currentStatus, connected: true }
+          : { configured: true, connected: true },
+      );
+      return loadedAccounts;
+    } catch (error) {
+      setSchwabMessage(error.message);
+      throw error;
+    } finally {
+      setSchwabLoading(false);
+    }
+  }
 
   useEffect(() => {
     async function loadStatus() {
@@ -26,10 +49,22 @@ export function useSchwabAccounts() {
           return;
         }
 
+        if (data.connected) {
+          setSchwabMessage("Schwab is connected. Loading account details...");
+
+          if (!autoLoadStarted.current) {
+            autoLoadStarted.current = true;
+            try {
+              await loadSchwabAccounts();
+            } catch {
+              // loadSchwabAccounts already updates the status message.
+            }
+          }
+          return;
+        }
+
         setSchwabMessage(
-          data.connected
-            ? "Schwab is connected. Load account details when you are ready."
-            : "Schwab is configured. Connect your account to load details.",
+          "Schwab is configured. Connect your account to load details.",
         );
       } catch {
         setSchwabMessage("Start the Python backend to use Schwab account details.");
@@ -40,6 +75,15 @@ export function useSchwabAccounts() {
   }, []);
 
   async function connectSchwab() {
+    if (schwabStatus?.connected) {
+      try {
+        await loadSchwabAccounts();
+      } catch {
+        // loadSchwabAccounts already updates the status message.
+      }
+      return;
+    }
+
     setSchwabLoading(true);
 
     try {
@@ -47,26 +91,6 @@ export function useSchwabAccounts() {
       window.location.href = authorizationUrl;
     } catch (error) {
       setSchwabMessage(error.message);
-      setSchwabLoading(false);
-    }
-  }
-
-  async function loadSchwabAccounts() {
-    setSchwabLoading(true);
-    setSchwabMessage("Loading Schwab account details...");
-
-    try {
-      const loadedAccounts = await getSchwabAccounts();
-      setSchwabAccounts(loadedAccounts);
-      setSchwabMessage("Showing read-only Schwab account details.");
-      setSchwabStatus((currentStatus) =>
-        currentStatus
-          ? { ...currentStatus, connected: true }
-          : { configured: true, connected: true },
-      );
-    } catch (error) {
-      setSchwabMessage(error.message);
-    } finally {
       setSchwabLoading(false);
     }
   }

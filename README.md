@@ -9,9 +9,8 @@ The app can:
 - Pull crypto quote data from Coinbase.
 - Refresh watchlist quotes without reloading the browser page.
 - Connect to Schwab with OAuth.
-- Load read-only Schwab account and position details.
-- Load read-only Coinbase account details.
-- Refresh Schwab account and portfolio data after accounts are loaded.
+- Load read-only Schwab and Coinbase positions into the portfolio panel.
+- Refresh Schwab and Coinbase portfolio data after accounts are loaded.
 - Group Schwab and Coinbase positions into portfolio categories.
 - Combine Schwab and Coinbase values in portfolio category totals.
 - Show each category's share of the combined portfolio.
@@ -212,18 +211,24 @@ The app does not stream quotes or poll automatically in the background.
 
 ## Schwab account and portfolio data
 
-After Schwab is connected, click **Load all accounts** in the dashboard.
+After Schwab OAuth completes, the dashboard automatically loads Schwab
+positions into **Current positions by risk style**.
+
+**Connect Coinbase** also loads Coinbase positions immediately.
 
 The app will:
 
-- load read-only Schwab account details
-- load positions when Schwab returns them
-- show account type, account identifier, estimated value, and position count
+- load read-only Schwab positions when Schwab returns them
+- show those positions in **Current positions by risk style**
 - calculate total portfolio value from Schwab liquidation values when available
 - fall back to summed position values if account totals are unavailable
 
-After accounts have loaded, clicking **Load all accounts** again reloads Schwab
-and Coinbase account details without reloading the whole browser page.
+The brokerage panel keeps connect/status controls only. It does not list
+individual Schwab or Coinbase accounts.
+
+After accounts have loaded, the button label changes to **Re-load all
+accounts**. Clicking it again refreshes Schwab and Coinbase portfolio data
+without reloading the whole browser page.
 
 The app does not poll account data automatically in the background.
 
@@ -258,10 +263,10 @@ GET /api/crypto?symbols=BTC,ETH,SOL
 Coinbase public crypto market data and returns normalized quote objects for the
 frontend watchlist.
 
-The dashboard has a separate **Connect Coinbase** button in the read-only
-account details panel. Coinbase does not use the same OAuth login screen as
-Schwab in this starter; the button loads accounts with the API key values stored
-in `backend/.env`.
+The dashboard has a separate **Connect Coinbase** button in the brokerage
+panel. Coinbase does not use the same OAuth login screen as Schwab in this
+starter; the button loads positions with the API key values stored in
+`backend/.env`.
 
 ## Portfolio categories
 
