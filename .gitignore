@@ -6,6 +6,7 @@ venv/
 .env
 .schwab_oauth_state
 .schwab_tokens.json
+backend/certs/
 
 # Node
 node_modules/

@@ -60,19 +60,33 @@ FastAPI is the backend, so there is not a third separate API process to start.
 
 ### Backend
 
+Schwab requires an HTTPS callback URL, so local development runs the FastAPI
+backend with a self-signed certificate.
+
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+python scripts/generate_dev_certs.py
+uvicorn app.main:app --reload --ssl-keyfile certs/key.pem --ssl-certfile certs/cert.pem
+```
+
+On Windows Git Bash, activate the venv with:
+
+```bash
+source .venv/Scripts/activate
 ```
 
 The backend runs at:
 
 ```text
-http://127.0.0.1:8000
+https://127.0.0.1:8000
 ```
+
+Your browser will warn about the self-signed certificate the first time you
+open that URL. That is expected for local Schwab OAuth. Continue past the
+warning so the callback can complete.
 
 ### Frontend
 
@@ -114,11 +128,14 @@ receives your Schwab app secret.
 
 Create an individual app in the Charles Schwab Developer Portal.
 
-Set the callback/redirect URL to:
+Set the callback/redirect URL to exactly:
 
 ```text
-http://127.0.0.1:8000/api/schwab/callback
+https://127.0.0.1:8000/api/schwab/callback
 ```
+
+Schwab rejects plain `http://` callback URLs. The local backend must therefore
+run with TLS, and this value must match `SCHWAB_REDIRECT_URI` exactly.
 
 ### 2. Create `backend/.env`
 
@@ -134,7 +151,7 @@ Fill in your Schwab app credentials:
 ```env
 SCHWAB_CLIENT_ID=your-schwab-app-key
 SCHWAB_CLIENT_SECRET=your-schwab-app-secret
-SCHWAB_REDIRECT_URI=http://127.0.0.1:8000/api/schwab/callback
+SCHWAB_REDIRECT_URI=https://127.0.0.1:8000/api/schwab/callback
 FRONTEND_URL=http://localhost:5173
 DEFAULT_STOCK_SYMBOLS=AAPL,MSFT,NVDA,TSLA
 DEFAULT_CRYPTO_SYMBOLS=BTC,ETH,SOL

@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/schwab", tags=["schwab"])
 AUTH_URL = "https://api.schwabapi.com/v1/oauth/authorize"
 TOKEN_URL = "https://api.schwabapi.com/v1/oauth/token"
 ACCOUNTS_URL = "https://api.schwabapi.com/trader/v1/accounts"
-DEFAULT_REDIRECT_URI = "http://127.0.0.1:8000/api/schwab/callback"
+DEFAULT_REDIRECT_URI = "https://127.0.0.1:8000/api/schwab/callback"
 
 
 def _token_path() -> Path:
