@@ -7,6 +7,8 @@ export function BrokeragePanel({
   const canLoadAll =
     Boolean(schwab.schwabStatus?.connected) ||
     Boolean(coinbase.coinbaseStatus?.configured);
+  const hasLoadedAccounts =
+    schwab.schwabAccounts.length > 0 || coinbase.coinbasePositions.length > 0;
 
   return (
     <section className="panel account-panel">
@@ -36,7 +38,11 @@ export function BrokeragePanel({
             onClick={onLoadAllAccounts}
             type="button"
           >
-            {loading ? "Loading..." : "Load all accounts"}
+            {loading
+              ? "Loading..."
+              : hasLoadedAccounts
+                ? "Re-load all accounts"
+                : "Load all accounts"}
           </button>
         </div>
       </div>

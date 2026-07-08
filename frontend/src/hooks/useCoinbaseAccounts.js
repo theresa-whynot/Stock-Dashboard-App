@@ -97,7 +97,9 @@ export function useCoinbaseAccounts() {
           toCoinbasePosition(account, quoteBySymbol.get(getAccountCurrency(account))),
         ),
       );
-      setCoinbaseMessage("Showing read-only Coinbase account details.");
+      setCoinbaseMessage(
+        "Coinbase connected. Positions loaded into the portfolio panel.",
+      );
     } catch (error) {
       setCoinbaseMessage(error.message);
     } finally {

@@ -211,7 +211,10 @@ The app does not stream quotes or poll automatically in the background.
 
 ## Schwab account and portfolio data
 
-After Schwab is connected, click **Load all accounts** in the dashboard.
+After Schwab OAuth completes, the dashboard automatically loads Schwab
+positions into **Current positions by risk style**.
+
+**Connect Coinbase** also loads Coinbase positions immediately.
 
 The app will:
 
@@ -223,8 +226,9 @@ The app will:
 The brokerage panel keeps connect/status controls only. It does not list
 individual Schwab or Coinbase accounts.
 
-After accounts have loaded, clicking **Load all accounts** again reloads Schwab
-and Coinbase portfolio data without reloading the whole browser page.
+After accounts have loaded, the button label changes to **Re-load all
+accounts**. Clicking it again refreshes Schwab and Coinbase portfolio data
+without reloading the whole browser page.
 
 The app does not poll account data automatically in the background.
 
